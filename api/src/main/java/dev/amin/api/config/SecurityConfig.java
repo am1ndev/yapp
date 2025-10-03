@@ -22,6 +22,7 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthen
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
 
 import static org.springframework.security.core.userdetails.User.builder;
@@ -34,13 +35,16 @@ public class SecurityConfig {
 
     private final JwtDecoder jwtDecoder;
     private final JwtAuthenticationConverter jwtAuthConverter;
+    private final CookieCsrfTokenRepository cookieCsrfTokenRepository;
+    private final CsrfTokenRequestHandler csrfTokenRequestHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRepository(cookieCsrfTokenRepository)
+                        .csrfTokenRequestHandler(csrfTokenRequestHandler)
                         .ignoringRequestMatchers("/api/v1/auth/login", "/api/v1/auth/signup")
                 )
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -25,7 +25,7 @@ public class Token extends Model {
     private UUID id;
 
     @JoinColumn(name = "user_id", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private User user;
 
     @Column(unique = true, nullable = false, length = 512)

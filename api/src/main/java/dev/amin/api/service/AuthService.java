@@ -19,29 +19,26 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
-
-import static org.springframework.security.core.userdetails.User.builder;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final String REFRESH_COOKIE_NAME = "refresh_token";
+    private final String REFRESH_COOKIE_NAME = "REFRESH_TOKEN";
     private final String REFRESH_COOKIE_PATH = "/api/v1/auth";
-    private final String COOKIE_SAMESITE = "Lax"; // consider Strict in prod
+    private final String COOKIE_SAMESITE = "Lax"; // consider 'Strict' in prod
     private final boolean COOKIE_SECURE = false; // set true in prod (HTTPS)
 
+    private final CsrfTokenRepository csrfTokenRepository;
     private final AuthenticationManager authManager;
     private final UserService userService;
     private final ChatService chatService;
@@ -51,20 +48,23 @@ public class AuthService {
     @Value("${app.security.refresh.expiration-days}")
     private long expiration;
 
-    public ResponseEntity<?> login(LoginRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> login(LoginRequest dto, HttpServletRequest request, HttpServletResponse response) {
         try {
-            Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+            Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
         } catch (AuthenticationException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Bad credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect email or password");
         }
 
-        User user = userService.find(request.getEmail());
+        User user = userService.find(dto.getEmail());
 
         String access = jwtService.generate(user);
         String refresh = tokenService.generate(user); // create opaque refresh token and persist its hash
 
         ResponseCookie cookie = cookie(refresh);
         response.addHeader("Set-Cookie", cookie.toString());
+
+        CsrfToken csrf = csrfTokenRepository.generateToken(request);
+        csrfTokenRepository.saveToken(csrf, request, response);
 
         return ResponseEntity.ok(new TokenResponse(access));
     }
@@ -114,16 +114,18 @@ public class AuthService {
         Token stored = valid.get();
         User user = stored.getUser();
 
-        // rotate
         tokenService.revoke(stored);
 
-        String newRaw = tokenService.generate(user); // refresh token
-        String newAccess = jwtService.generate(user);
+        String refresh = tokenService.generate(user);
+        String access = jwtService.generate(user);
 
-        ResponseCookie cookie = cookie(newRaw);
+        ResponseCookie cookie = cookie(refresh);
         response.addHeader("Set-Cookie", cookie.toString());
 
-        return ResponseEntity.ok(new TokenResponse(newAccess));
+        CsrfToken csrf = csrfTokenRepository.generateToken(request);
+        csrfTokenRepository.saveToken(csrf, request, response);
+
+        return ResponseEntity.ok(new TokenResponse(access));
     }
 
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
@@ -142,18 +144,20 @@ public class AuthService {
         ResponseCookie cookie = cookie(null);
         response.addHeader("Set-Cookie", cookie.toString());
 
+        csrfTokenRepository.saveToken(null, request, response);
+
         return ResponseEntity.ok().build();
     }
 
     private ResponseCookie cookie(String token) {
         boolean reset = token == null || token.isEmpty();
-        long age = Duration.of(expiration, ChronoUnit.DAYS).getSeconds();
+        Duration age = reset ? Duration.ofDays(0) : Duration.ofDays(expiration);
 
         return ResponseCookie.from(REFRESH_COOKIE_NAME, reset ? "" : token)
                 .httpOnly(true)
                 .secure(COOKIE_SECURE)
                 .path(REFRESH_COOKIE_PATH)
-                .maxAge(reset ? 0 : age) // 30 days
+                .maxAge(age) // 30 days
                 .sameSite(COOKIE_SAMESITE)
                 .build();
     }
