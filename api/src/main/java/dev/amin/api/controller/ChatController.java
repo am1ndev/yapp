@@ -6,9 +6,7 @@ import dev.amin.api.model.Chat;
 import dev.amin.api.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -24,5 +22,10 @@ public class ChatController {
         Chat chat = chatService.find(actor);
 
         return ResponseEntity.ok(ChatDto.from(chat));
+    }
+
+    @PostMapping
+    public ResponseEntity<?> message(@Actor UUID actor, @RequestBody ChatDto chatDto) {
+        return ResponseEntity.noContent().build();
     }
 }
