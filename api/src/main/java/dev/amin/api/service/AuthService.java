@@ -2,8 +2,8 @@ package dev.amin.api.service;
 
 import dev.amin.api.dto.LoginRequest;
 import dev.amin.api.dto.SignupRequest;
-import dev.amin.api.dto.TokenResponse;
-import dev.amin.api.dto.UserResponse;
+import dev.amin.api.dto.TokenDto;
+import dev.amin.api.dto.UserDto;
 import dev.amin.api.model.Chat;
 import dev.amin.api.model.Token;
 import dev.amin.api.model.User;
@@ -59,7 +59,7 @@ public class AuthService {
         User user = userService.find(dto.getEmail());
 
         String access = token(request, response, user);
-        return ResponseEntity.ok(new TokenResponse(access));
+        return ResponseEntity.ok(new TokenDto(access));
     }
 
     public ResponseEntity<?> signup(SignupRequest request) {
@@ -72,7 +72,7 @@ public class AuthService {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(UserResponse.fromUser(user));
+                .body(UserDto.from(user));
     }
 
     public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
@@ -109,7 +109,7 @@ public class AuthService {
         tokenService.revoke(token);
 
         String access = token(request, response, user);
-        return ResponseEntity.ok(new TokenResponse(access));
+        return ResponseEntity.ok(new TokenDto(access));
     }
 
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {

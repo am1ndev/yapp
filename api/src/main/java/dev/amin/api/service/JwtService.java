@@ -43,6 +43,9 @@ public class JwtService {
                 .claim(ROLES_CLAIM, roles)
                 .build();
 
-        return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        String generated = this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+
+        log.info("generated jwt token: {}", generated);
+        return generated;
     }
 }

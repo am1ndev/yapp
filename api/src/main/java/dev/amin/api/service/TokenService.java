@@ -38,7 +38,9 @@ public class TokenService {
                 .expiresAt(expiry)
                 .build();
 
-        repository.save(refresh);
+        Token generated = repository.save(refresh);
+
+        log.info("generated refresh token: {}", generated);
         return raw;
     }
 
@@ -65,13 +67,17 @@ public class TokenService {
 
     public void revoke(Token token) {
         token.setRevoked(true);
-        repository.save(token);
+        Token revoked = repository.save(token);
+
+        log.info("revoked refresh token: {}", revoked);
     }
 
     public void revoke(User user) {
-        List<Token> tokens = repository.findByUserAndRevokedFalse(user);
+        List<Token> tokens = repository.findAllByUser(user);
         tokens.forEach(t -> t.setRevoked(true));
 
         repository.saveAll(tokens);
+
+        log.info("revoked all refresh tokens: userId={}", user.getId());
     }
 }

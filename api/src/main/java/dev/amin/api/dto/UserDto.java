@@ -15,7 +15,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(Include.NON_NULL)
-public class UserResponse {
+public class UserDto {
 
     private UUID id;
     private String name;
@@ -23,8 +23,8 @@ public class UserResponse {
     private Instant createdAt;
     private Instant updatedAt;
 
-    public static UserResponse fromUser(User user) {
-        UserResponse res = new UserResponse();
+    public static UserDto from(User user) {
+        UserDto res = new UserDto();
         res.setId(user.getId());
         res.setName(user.getName());
         res.setEmail(user.getEmail());
