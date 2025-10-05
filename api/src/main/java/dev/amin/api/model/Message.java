@@ -1,5 +1,6 @@
 package dev.amin.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -27,7 +28,7 @@ public class Message extends Model {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @ToString.Exclude
+    @JsonIgnore
     @JoinColumn(name = "chat_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Chat chat;

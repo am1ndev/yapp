@@ -3,6 +3,7 @@ package dev.amin.api.service;
 import dev.amin.api.dto.LoginRequest;
 import dev.amin.api.dto.SignupRequest;
 import dev.amin.api.dto.TokenResponse;
+import dev.amin.api.dto.UserResponse;
 import dev.amin.api.model.Chat;
 import dev.amin.api.model.Token;
 import dev.amin.api.model.User;
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -33,10 +33,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private final String SET_COOKIE_HEADER = "Set-Cookie";
     private final String REFRESH_COOKIE_NAME = "REFRESH_TOKEN";
     private final String REFRESH_COOKIE_PATH = "/api/v1/auth";
-    private final String COOKIE_SAMESITE = "Lax"; // consider 'Strict' in prod
-    private final boolean COOKIE_SECURE = false; // set true in prod (HTTPS)
+    private final String COOKIE_SAMESITE = "Lax"; // 'Strict'
+    private final boolean COOKIE_SECURE = false; // true (HTTPS)
 
     private final CsrfTokenRepository csrfTokenRepository;
     private final AuthenticationManager authManager;
@@ -57,15 +58,7 @@ public class AuthService {
 
         User user = userService.find(dto.getEmail());
 
-        String access = jwtService.generate(user);
-        String refresh = tokenService.generate(user); // create opaque refresh token and persist its hash
-
-        ResponseCookie cookie = cookie(refresh);
-        response.addHeader("Set-Cookie", cookie.toString());
-
-        CsrfToken csrf = csrfTokenRepository.generateToken(request);
-        csrfTokenRepository.saveToken(csrf, request, response);
-
+        String access = token(request, response, user);
         return ResponseEntity.ok(new TokenResponse(access));
     }
 
@@ -77,9 +70,9 @@ public class AuthService {
         User user = userService.save(request);
         Chat chat = chatService.create(user);
 
-        return ResponseEntity.status(
-                HttpStatus.CREATED).body(Map.of("id", user.getId(), "email", user.getEmail())
-        );
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(UserResponse.fromUser(user));
     }
 
     public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
@@ -98,33 +91,24 @@ public class AuthService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // check if token exists even in revoked state -> detect reuse
-        Optional<Token> any = tokenService.findByRawAnyState(raw);
+        Optional<Token> any = tokenService.detect(raw);
         if (any.isPresent() && any.get().isRevoked()) {
-            // reuse detected: revoke ALL tokens for that user (defense)
-            tokenService.revokeAll(any.get().getUser());
+            tokenService.revoke(any.get().getUser());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Optional<Token> valid = tokenService.validate(raw);
-        if (valid.isEmpty()) {
+        Optional<Token> validated = tokenService.validate(raw);
+        // TODO: handle auth error in exception handling implementation
+        if (validated.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Token stored = valid.get();
-        User user = stored.getUser();
+        Token token = validated.get();
+        User user = token.getUser();
 
-        tokenService.revoke(stored);
+        tokenService.revoke(token);
 
-        String refresh = tokenService.generate(user);
-        String access = jwtService.generate(user);
-
-        ResponseCookie cookie = cookie(refresh);
-        response.addHeader("Set-Cookie", cookie.toString());
-
-        CsrfToken csrf = csrfTokenRepository.generateToken(request);
-        csrfTokenRepository.saveToken(csrf, request, response);
-
+        String access = token(request, response, user);
         return ResponseEntity.ok(new TokenResponse(access));
     }
 
@@ -142,22 +126,38 @@ public class AuthService {
                 .ifPresent(tokenService::revoke);
 
         ResponseCookie cookie = cookie(null);
-        response.addHeader("Set-Cookie", cookie.toString());
+        response.addHeader(SET_COOKIE_HEADER, cookie.toString());
 
+        // set new csrf token if web needs public routes access
         csrfTokenRepository.saveToken(null, request, response);
 
         return ResponseEntity.ok().build();
     }
 
-    private ResponseCookie cookie(String token) {
-        boolean reset = token == null || token.isEmpty();
-        Duration age = reset ? Duration.ofDays(0) : Duration.ofDays(expiration);
+    private String token(HttpServletRequest request, HttpServletResponse response, User user) {
+        String refresh = tokenService.generate(user);
+        String access = jwtService.generate(user);
 
-        return ResponseCookie.from(REFRESH_COOKIE_NAME, reset ? "" : token)
+        ResponseCookie cookie = cookie(refresh);
+        response.addHeader(SET_COOKIE_HEADER, cookie.toString());
+
+        CsrfToken csrf = csrfTokenRepository.generateToken(request);
+        csrfTokenRepository.saveToken(csrf, request, response);
+
+        return access;
+    }
+
+    private ResponseCookie cookie(String token) {
+        boolean clear = token == null || token.isEmpty();
+
+        String value = clear ? "" : token;
+        Duration age = clear ? Duration.ofDays(0) : Duration.ofDays(expiration);
+
+        return ResponseCookie.from(REFRESH_COOKIE_NAME, value)
                 .httpOnly(true)
                 .secure(COOKIE_SECURE)
                 .path(REFRESH_COOKIE_PATH)
-                .maxAge(age) // 30 days
+                .maxAge(age)
                 .sameSite(COOKIE_SAMESITE)
                 .build();
     }

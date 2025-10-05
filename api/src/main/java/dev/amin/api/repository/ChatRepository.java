@@ -1,13 +1,16 @@
 package dev.amin.api.repository;
 
 import dev.amin.api.model.Chat;
-import jdk.jfr.Registered;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
-@Registered
+@Repository
 public interface ChatRepository extends JpaRepository<Chat, UUID> {
 
-
+    @Query("select c from Chat c left join fetch c.messages where c.user.id = ?1")
+    Optional<Chat> findByUser(UUID id);
 }

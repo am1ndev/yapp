@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -20,5 +22,10 @@ public class ChatService {
         chat.setTitle("Auto generated chat");
 
         return repository.save(chat);
+    }
+
+    public Chat find(UUID actor) {
+        return repository.findByUser(actor)
+                .orElseThrow(() -> new RuntimeException("Chat not found"));
     }
 }

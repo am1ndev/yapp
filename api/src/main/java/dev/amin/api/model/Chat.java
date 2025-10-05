@@ -1,5 +1,6 @@
 package dev.amin.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -24,6 +25,7 @@ public class Chat {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
