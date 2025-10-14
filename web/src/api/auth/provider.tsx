@@ -7,10 +7,10 @@ import {setToken} from "@/api/store.ts";
 import type {Token} from "@/types/token";
 import type {User} from "@/types/user";
 import {AuthContext} from "./context.tsx";
-import {getUser} from "@/services/users.ts";
+import {user} from "@/services/users.ts";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [actor, setActor] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const timer = useRef<number | null>(null);
 
@@ -45,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
     } else {
       clearTimer();
       setToken(null);
-      setUser(null);
+      setActor(null);
     }
     return token;
   }, []);
@@ -61,9 +61,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
     setToken(token);
     schedule(token);
 
-    const me = await getUser();
-    setUser(me);
-    return me;
+    const u = await user();
+    setActor(u);
+    return u;
   }, []);
 
   const signup = useCallback(async (name: string, email: string, password: string) => {
@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
     } finally {
       clearTimer();
       setToken(null);
-      setUser(null);
+      setActor(null);
     }
   }, []);
 
@@ -88,15 +88,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
         const token = await attempt();
         if (token) {
           schedule(token);
-          const me = await getUser();
-          if (mounted) setUser(me);
+          const u = await user();
+          if (mounted) setActor(u);
         } else {
-          if (mounted) setUser(null);
+          if (mounted) setActor(null);
         }
       } catch {
         if (mounted) {
           setToken(null);
-          setUser(null);
+          setActor(null);
         }
       } finally {
         if (mounted) setLoading(false);
@@ -109,13 +109,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
   }, []);
 
   const value = useMemo<AuthContextType>(() => ({
-    user,
-    authenticated: !!user,
+    user: actor,
+    authenticated: !!actor,
     loading,
     login,
     signup,
     logout
-  }), [user, loading, login, signup, logout]);
+  }), [actor, loading, login, signup, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

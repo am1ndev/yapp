@@ -1,10 +1,10 @@
 import type {Message} from "@/types/message";
 
 export interface Chat {
-  id: string;
-  userId?: string;
+  id?: string;
   title?: string;
-  messages: Message[];
+  active?: boolean;
+  messages?: Message[];
   createdAt?: string;
   updatedAt?: string;
 }
