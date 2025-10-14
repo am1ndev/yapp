@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import {Link, useNavigate} from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import {Link, useNavigate, useSearchParams} from "react-router-dom";
 import {useAuth} from "@/hooks/useAuth.ts";
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
@@ -11,11 +11,18 @@ import {Spinner} from "@/components/ui/spinner.tsx";
 export default function SignupPage() {
   const {signup} = useAuth();
   const nav = useNavigate();
+  const [params] = useSearchParams();
+
+  const query = params.get("email") || "";
 
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(query);
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (query) setEmail(query);
+  }, [query]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

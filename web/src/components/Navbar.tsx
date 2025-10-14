@@ -20,7 +20,7 @@ interface NavbarProps {
   user?: User | null
   chat?: Chat | null
   onLogout?: () => void
-  onUpdate?: (title: string) => void
+  onUpdate?: (t: string) => void
 }
 
 export default function Navbar({authenticated, user, chat, onLogout, onUpdate}: NavbarProps) {
@@ -50,7 +50,8 @@ export default function Navbar({authenticated, user, chat, onLogout, onUpdate}: 
   };
 
   return (
-    <header className="fixed top-0 z-50 w-full h-16 border-b border-border bg-background/15 backdrop-blur-md">
+    // "fixed top-0 z-50 w-full h-16 border-b border-border bg-background/15 backdrop-blur-md"
+    <header className="fixed top-0 z-50 w-full h-16 bg-background/15 backdrop-blur-md">
     <div className="max-w-6xl relative mx-auto h-full flex items-center justify-between px-4">
         <div className="flex items-center space-x-2 w-1/2">
           <Link className={"font-semibold text-xl"} to="/">
