@@ -28,4 +28,11 @@ public class ChatController {
     public ResponseEntity<?> message(@Actor UUID actor, @RequestBody ChatDto chatDto) {
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping
+    public ResponseEntity<ChatDto> updateChat(@Actor UUID actor, @RequestBody ChatDto request) {
+        Chat chat = chatService.update(actor, request);
+
+        return ResponseEntity.ok(ChatDto.from(chat));
+    }
 }

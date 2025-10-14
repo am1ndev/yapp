@@ -18,7 +18,7 @@ import java.util.UUID;
 @Table(name = "chats", indexes = {
         @Index(name = "idx_chat_user", columnList = "user_id")
 })
-public class Chat {
+public class Chat extends Model {
 
     @Id
     @UuidGenerator

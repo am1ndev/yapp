@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,6 +18,8 @@ public class ChatDto {
     private String title;
     private boolean active;
     private List<MessageDto> messages;
+    private Instant createdAt;
+    private Instant updatedAt;
 
     public static ChatDto from(Chat chat) {
         ChatDto res = new ChatDto();
@@ -26,6 +29,8 @@ public class ChatDto {
         res.setMessages(chat.getMessages().stream()
                 .map(MessageDto::from)
                 .toList());
+        res.setCreatedAt(chat.getCreatedAt());
+        res.setUpdatedAt(chat.getUpdatedAt());
 
         return res;
     }
