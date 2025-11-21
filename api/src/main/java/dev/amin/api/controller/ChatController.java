@@ -2,7 +2,9 @@ package dev.amin.api.controller;
 
 import dev.amin.api.annotation.Actor;
 import dev.amin.api.dto.ChatDto;
+import dev.amin.api.dto.MessageDto;
 import dev.amin.api.model.Chat;
+import dev.amin.api.model.Message;
 import dev.amin.api.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +27,10 @@ public class ChatController {
     }
 
     @PostMapping
-    public ResponseEntity<?> message(@Actor UUID actor, @RequestBody ChatDto chatDto) {
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<MessageDto> doChat(@Actor UUID actor, @RequestBody MessageDto request) {
+        Message reply = chatService.chat(actor, request.getContent());
+
+        return ResponseEntity.ok(MessageDto.from(reply));
     }
 
     @PutMapping

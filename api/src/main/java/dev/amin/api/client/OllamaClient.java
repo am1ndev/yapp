@@ -3,14 +3,13 @@ package dev.amin.api.client;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 @Slf4j
-@Component
+//@Component
 public class OllamaClient {
 
     @Value("${spring.ai.ollama.chat.model}")

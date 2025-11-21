@@ -17,6 +17,8 @@ public class MessageDto {
     private String content;
     private Instant sentAt;
     private Message.Type type;
+    private Instant createdAt;
+    private Instant updatedAt;
 
     public static MessageDto from(Message message) {
         MessageDto res = new MessageDto();
@@ -24,6 +26,8 @@ public class MessageDto {
         res.setContent(message.getContent());
         res.setSentAt(message.getSentAt());
         res.setType(message.getType());
+        res.setCreatedAt(message.getCreatedAt());
+        res.setUpdatedAt(message.getUpdatedAt());
 
         return res;
     }

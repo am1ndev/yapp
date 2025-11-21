@@ -5,11 +5,23 @@ spring:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: false
     open-in-view: false
+  ai:
+    ollama:
+      chat:
+        options:
+          model: mistral:7b-instruct
+          temperature: 0.6
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
 
 app:
   frontend:
