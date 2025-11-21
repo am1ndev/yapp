@@ -3,17 +3,17 @@ import {API} from "@/config/env";
 import type {Chat} from "@/types/chat";
 import type {Message} from "@/types/message";
 
-export async function chat(): Promise<Chat> {
+export async function getChat(): Promise<Chat> {
   const res = await api.get<Chat>(API.routes.chats);
   return res.data;
 }
 
-export async function ask(content: string) {
-  const res = await api.post<Message>(API.routes.chats, {content});
+export async function postChat(content: Message) {
+  const res = await api.post<Message>(API.routes.chats, content);
   return res.data;
 }
 
-export async function update(request: Chat) {
+export async function updateChat(request: Chat) {
   const res = await api.put<Chat>(API.routes.chats, request);
   return res.data;
 }

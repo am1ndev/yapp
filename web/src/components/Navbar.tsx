@@ -51,7 +51,7 @@ export default function Navbar({authenticated, user, chat, onLogout, onUpdate}: 
 
   return (
     // "fixed top-0 z-50 w-full h-16 border-b border-border bg-background/15 backdrop-blur-md"
-    <header className="fixed top-0 z-50 w-full h-16 bg-background/15 backdrop-blur-md">
+    <header className="fixed top-0 z-50 w-full h-16 bg-background/15 backdrop-blur-lg">
     <div className="max-w-6xl relative mx-auto h-full flex items-center justify-between px-4">
         <div className="flex items-center space-x-2 w-1/2">
           <Link className={"font-semibold text-xl"} to="/">
@@ -90,7 +90,7 @@ export default function Navbar({authenticated, user, chat, onLogout, onUpdate}: 
                       {user?.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex flex-col text-left">
+                  <div className="hidden sm:flex flex-col text-left">
                     <span className="text-sm font-medium">{user?.name}</span>
                     <span className="text-xs text-muted-foreground truncate max-w-[120px]">
                       {user?.email}
