@@ -14,81 +14,6 @@ export default function ChatPage() {
   const [chat, setChat] = useState<Chat>();
   const [messages, setMessages] = useState<Message[] | undefined>([]);
 
-  // const [messages, setMessages] = React.useState([
-  //   {
-  //     role: "agent",
-  //     content: "Hi, how can I help you today?",
-  //   },
-  //   {
-  //     role: "user",
-  //     content: "Hey, I'm having trouble with my account.",
-  //   },
-  //   },
-  //   {
-  //     role: "agent",
-  //     content: "Hi, how can I help you today?",
-  //   },
-  //   {
-  //     role: "user",
-  //     content: "Hey, I'm having trouble with my account.",
-  //   },
-  //   {
-  //     role: "agent",
-  //     content: "What seems to be the problem?",
-  //   },
-  //   {
-  //     role: "user",
-  //     content: "I can't log in.",
-  //   },
-  //   {
-  //     role: "agent",
-  //     content: "Hi, how can I help you today?",
-  //   },
-  //   {
-  //     role: "user",
-  //     content: "Hey, I'm having trouble with my account.",
-  //   },
-  //   {
-  //     role: "agent",
-  //     content: "What seems to be the problem?",
-  //   },
-  //   {
-  //     role: "user",
-  //     content: "I can't log in.",
-  //   },
-  //   {
-  //     role: "agent",
-  //     content: "Hi, how can I help you today?",
-  //   },
-  //   {
-  //     role: "user",
-  //     content: "Hey, I'm having trouble with my account.",
-  //   },
-  //   {
-  //     role: "agent",
-  //     content: "What seems to be the problem?",
-  //   },
-  //   {
-  //     role: "user",
-  //     content: "I can't log in.",
-  //   },
-  //   {
-  //     role: "agent",
-  //     content: "Hi, how can I help you today?",
-  //   },
-  //   {
-  //     role: "user",
-  //     content: "Hey, I'm having trouble with my account.",
-  //   },
-  //   {
-  //     role: "agent",
-  //     content: "What seems to be the problem?",
-  //   },
-  //   {
-  //     role: "user",
-  //     content: "I can't log in.",
-  //   },
-  // ])
   const [submitting, setSubmitting] = useState(false);
 
   const messagesRef = useRef<HTMLDivElement>(null);
@@ -128,14 +53,10 @@ export default function ChatPage() {
     }
 
     try {
-      // optimistically add user message
-
-      // setMessages([...messages, {role: "agent", content: input}]);
       setSubmitting(true);
       setInput("");
 
       const userMsg: Message = {
-        // id: crypto.randomUUID(),
         type: "USER",
         content: input,
         createdAt: new Date().toISOString(),

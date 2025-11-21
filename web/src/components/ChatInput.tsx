@@ -29,11 +29,6 @@ export function ChatInput({submitting, input, setInput, onSubmit}: ChatInputProp
       className="fixed bottom-0 left-0 w-full px-4 py-3 flex justify-center"
     >
       <div className="relative w-full max-w-3xl flex items-end">
-        {/* <GlowEffect*/}
-        {/*  colors={['#0894FF', '#C959DD', '#FF2E54', '#FF9004']}*/}
-        {/*  blur='medium'*/}
-        {/*  mode="rotate"*/}
-        {/*/>*/}
         <Textarea
           ref={textareaRef}
           id="message"
